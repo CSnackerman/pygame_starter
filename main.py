@@ -72,6 +72,9 @@ while (RUNNING):
     # update
     player_rect.update(player_x, player_y, player_width, player_height)
 
+    # clear
+    window.fill (FILL_COLOR)
+    
     # render
     pygame.draw.rect(window, player_color, player_rect)
 
