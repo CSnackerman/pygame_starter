@@ -8,40 +8,55 @@ from pygame import Rect, Vector2, Color
 # --- Globals ---
 
 RUNNING = 1
-MAX_SPEED = 1000
+MAX_SPEED = 500
 
 
 # --- Configuration ---
 
 WINDOW_FLAGS = 0
+CURSOR_VISIBLE = True
+
 WINDOW_FLAGS = FULLSCREEN | HWSURFACE | NOFRAME | DOUBLEBUF
-WIDTH = 1280
-HEIGHT = 720
+CURSOR_VISIBLE = False
+
+WIDTH = 1920
+HEIGHT = 1080
 RESOLUTION = (WIDTH, HEIGHT)
+
 FILL_COLOR = Color (27, 27, 27)
 
 
 # --- Setup ---
 
+# pygame
 pygame.init()
 window = pygame.display.set_mode(RESOLUTION, WINDOW_FLAGS)
 pygame.display.set_caption("Plat")
+pygame.mouse.set_visible(CURSOR_VISIBLE)
+
+# time & fps
 clock = pygame.time.Clock()
 fps_list = []
+fps_list_len = 0
+
+# miscellaneous
+window_center_x = WIDTH // 2
+window_center_y = HEIGHT // 2
 
 
 # --- Game Objects ---
 
+# player
 player_width = 25
 player_height = 50
-player_rect = Rect (0, 0, player_width, player_height)
+player_half_width = player_width // 2
+player_half_height = player_height // 2
+player_position = Vector2 ( [window_center_x - player_half_width, window_center_y - player_half_height] ) 
+player_velocity = Vector2 ( [0.0, 0.0] ) 
+player_rect = Rect (player_position.x, player_position.y, player_width, player_height)
 player_color = Color (27, 97, 29)
-player_x = 0
-player_y = 0
-player_position = Vector2 ( [0, 0] ) # TODO fix diagonal movement speedup
-player_velocity = Vector2 ( [0, 0] ) # TODO
 
-
+# fps text
 bold, antialias = True, True
 fps_font = pygame.font.SysFont ('Verdana', 11, bold)
 fps_text_surface = fps_font.render ('144 FPS', antialias, (255, 255, 255, 100))
@@ -53,11 +68,13 @@ fps_text_position_x = WIDTH - fps_text_surface.get_rect().width
 while (RUNNING):
 
     # time & framerate
-    pygame.time.wait(1)
+    # pygame.time.wait(2)
     clock.tick()
     dt = clock.get_time() / 1000.0    # delta time (sec)
     fps = int (clock.get_fps())
     fps_list.append (fps)
+    fps_list_len += 1
+
 
     # quit event
     for event in pygame.event.get():
@@ -69,40 +86,44 @@ while (RUNNING):
     # keyboard events
     pressed_keys = pygame.key.get_pressed()
 
+    player_velocity.update (0, 0)
+
     if pressed_keys [K_UP]:
-        player_y -= MAX_SPEED * dt
+        player_velocity.y -= 1
     
     if pressed_keys[K_DOWN]:
-        player_y += MAX_SPEED * dt
-
+        player_velocity.y += 1
+        
     if pressed_keys [K_LEFT]:
-        player_x -= MAX_SPEED * dt
+        player_velocity.x -= 1
 
     if pressed_keys [K_RIGHT]:
-        player_x += MAX_SPEED * dt
-
+        player_velocity.x += 1
+    
     if pressed_keys [K_ESCAPE]:
         RUNNING = 0
         break
 
     # display average frame rate every 100 frames
-    fps_list_length = len (fps_list)
 
-    if ( fps_list_length >= 100 ):
+    if ( fps_list_len >= 100 ):
         
         total = 0
         for f in fps_list:
             total += f
 
-        avg_fps = int (total / fps_list_length)
+        avg_fps = int (total / fps_list_len)
             
         pygame.display.set_caption ("Plat - " + str (avg_fps) + " fps" )
         fps_list.clear()
+        fps_list_len = 0
 
         fps_text_surface = fps_font.render (str (avg_fps) + ' FPS', True, (255, 255, 255))
     
     # move the player rect
-    player_rect.update (player_x, player_y, player_width, player_height)
+    if player_velocity.x != 0 or player_velocity.y != 0:
+        player_position += player_velocity.normalize() * MAX_SPEED * dt
+        player_rect.update (player_position.x, player_position.y, player_width, player_height)
 
     # clear
     window.fill (FILL_COLOR)
@@ -113,7 +134,7 @@ while (RUNNING):
     window.blit ( fps_text_surface, (fps_text_position_x, 0) )
 
     # swap the framebuffer
-    pygame.display.flip()
+    pygame.display.update()
 
 
 # --- Exit ---
