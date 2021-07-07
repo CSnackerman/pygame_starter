@@ -73,7 +73,7 @@ player_color = Color (27, 97, 29)
 bold, antialias = True, True
 fps_font = pygame.font.SysFont ('Verdana', 11, bold)
 fps_font_color = Color (255, 255, 255)
-fps_text_surface = fps_font.render ('144 FPS', antialias, fps_font_color)
+fps_text_surface = fps_font.render ('1000 FPS', antialias, fps_font_color)
 fps_text_position_x = WIDTH - fps_text_surface.get_rect().width
 
 
