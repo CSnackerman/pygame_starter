@@ -4,24 +4,12 @@ import pygame
 from pygame.locals import *
 from pygame import Rect, Vector2, Color
 
+from platform import Platform
 
-# --- Configuration ---
+from gamesettings import RESOLUTION, WINDOW_FLAGS, CURSOR_VISIBLE
+from gamesettings import WIDTH, HEIGHT, BG_COLOR
 
-WINDOW_FLAGS = 0
-CURSOR_VISIBLE = True
-
-# WINDOW_FLAGS = FULLSCREEN | HWSURFACE | NOFRAME | DOUBLEBUF
-# CURSOR_VISIBLE = False
-
-WIDTH = 1024
-HEIGHT = 768
-RESOLUTION = (WIDTH, HEIGHT)
-ASPECT_RATIO = WIDTH / HEIGHT
-
-BG_COLOR = Color (27, 27, 27)
-
-
-
+from player import Player
 
 
 # --- Setup ---
@@ -32,9 +20,6 @@ pygame.init()
 # window
 window = pygame.display.set_mode (RESOLUTION, WINDOW_FLAGS)
 window_rect = window.get_rect()
-window_center_x = WIDTH // 2
-window_center_y = HEIGHT // 2
-window_side_diff = WIDTH - HEIGHT
 pygame.display.set_caption("Plat")
 
 # time & fps
@@ -42,45 +27,20 @@ clock = pygame.time.Clock()
 frame_time = 0
 frame_counter = 0
 
-# game settings
-MAX_SPEED = 1100
-GRAVITY = 3000
-JUMP_POWER = 1100
-ACCELERATION = 10000
-DECELERATION = 7000
+
 
 # miscellaneous
 pygame.mouse.set_visible(CURSOR_VISIBLE)
 
 
 
-
-
 # --- Game Objects ---
 
 # player
-player_width = WIDTH // 42
-player_height = HEIGHT // 15
-player_half_width = player_width // 2
-player_half_height = player_height // 2
+player = Player()
 
-player_position = Vector2 ([
-    window_center_x - player_half_width, 
-    window_center_y - player_half_height
-]) 
-
-player_velocity = Vector2 ( [0.0, 0.0] ) 
-
-player_accel = Vector2 ([0, GRAVITY])
-
-player_rect = Rect (
-    player_position.x,
-    player_position.y,
-    player_width,
-    player_height
-)
-
-player_color = Color (27, 97, 29)
+# platforms
+p1 = Platform (100, HEIGHT - 100, 200, 10, Color (255, 0, 0, 255))
 
 # fps text
 bold, antialias = True, True
@@ -91,6 +51,9 @@ fps_text_position_x = WIDTH - fps_text_surface.get_rect().width
 
 
 
+# --- Functions ---
+
+
 
 
 # --- Game Loop ---
@@ -99,32 +62,17 @@ RUNNING = 1
 while (RUNNING):
 
     # time & framerate
+    pygame.time.delay(5)
     dt = clock.get_time() / 1000.0    # delta time (sec)
     clock.tick()
     frame_time += dt
     frame_counter += 1
     
     # keyboard events
+
     pressed_keys = pygame.key.get_pressed()
 
-    # accelerate left or right
-    if pressed_keys [K_LEFT]:
-        player_accel.x = -ACCELERATION
-
-    elif pressed_keys [K_RIGHT]:
-        player_accel.x = ACCELERATION
-
-    # slow down / decelerate
-    else:
-        if player_velocity.x > 1:
-            player_accel.x = -DECELERATION
-        elif player_velocity.x < -1:
-            player_accel.x = DECELERATION
-
-        # stop when slow enough
-        else:
-            player_accel.x = 0
-            player_velocity.x = 0
+    player.move_horizontal(pressed_keys)
     
     # quit
     if pressed_keys [K_ESCAPE]:
@@ -141,13 +89,13 @@ while (RUNNING):
             break
         
         # keyboard events
-        if event.type == pygame.KEYDOWN: 
+        if event.type == pygame.KEYDOWN:
 
             key = event.key
             
             # jump
             if key == K_SPACE:
-                player_velocity.y = -JUMP_POWER
+                player.jump (p1)
 
 
 
@@ -169,45 +117,15 @@ while (RUNNING):
             fps_font_color
         )
     
-    # apply acceleration
-    player_velocity += player_accel * dt
-
-    # apply speed limit
-    if player_velocity.x > MAX_SPEED:   # right
-        player_velocity.x = MAX_SPEED
-
-    elif player_velocity.x < -MAX_SPEED:    # left
-        player_velocity.x = -MAX_SPEED
-
-    if player_velocity.y > MAX_SPEED:   # down
-        player_velocity.y = MAX_SPEED
-
-    # move the player rect
-    if player_velocity.x != 0 or player_velocity.y != 0:
-        
-        # calculate new position
-        player_position.x += player_velocity.x * dt
-        player_position.y += player_velocity.y * dt
-        
-        # update the rectangle
-        player_rect.update (
-            player_position.x, 
-            player_position.y, 
-            player_width, 
-            player_height
-        )
-
-    # collide with floor
-    floor = HEIGHT - player_height
-    if player_position.y > floor:
-        player_position.y = floor
-        player_velocity.y = 0
+    player.update(dt, p1)
 
     # clear
     window.fill (BG_COLOR)
 
     # render game objects
-    pygame.draw.rect (window, player_color, player_rect)
+    p1.draw(window)
+
+    player.draw (window)
 
     window.blit ( fps_text_surface, (fps_text_position_x, 0) )
 

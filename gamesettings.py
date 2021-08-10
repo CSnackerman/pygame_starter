@@ -1,0 +1,28 @@
+from pygame import Color
+
+# config
+
+WINDOW_FLAGS = 0
+CURSOR_VISIBLE = True
+
+# WINDOW_FLAGS = FULLSCREEN | HWSURFACE | NOFRAME | DOUBLEBUF
+# CURSOR_VISIBLE = False
+
+WIDTH = 1024
+HEIGHT = 768
+RESOLUTION = (WIDTH, HEIGHT)
+ASPECT_RATIO = WIDTH / HEIGHT
+
+BG_COLOR = Color (27, 27, 27)
+
+window_center_x = WIDTH // 2
+window_center_y = HEIGHT // 2
+window_side_diff = WIDTH - HEIGHT
+
+
+# game settings
+MAX_SPEED = 1100
+GRAVITY = 3000
+JUMP_POWER = 1100
+ACCELERATION = 10000
+DECELERATION = 7000
