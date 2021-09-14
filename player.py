@@ -1,4 +1,3 @@
-from platform import Platform
 import pygame
 from pygame.locals import *
 from pygame import Rect, Vector2, Color
@@ -6,9 +5,12 @@ from gamesettings import WIDTH, HEIGHT
 from gamesettings import window_center_x, window_center_y
 from gamesettings import GRAVITY, ACCELERATION, DECELERATION, JUMP_POWER, MAX_SPEED
 
+import pymunk
+
+
 class Player:
 
-    def __init__(self):
+    def __init__(self, space):
 
         self.width = WIDTH // 42
         self.height = HEIGHT // 15
@@ -33,6 +35,19 @@ class Player:
 
         self.player_color = Color (27, 97, 29)
 
+        # pymunk stuff
+        self.body = pymunk.Body(1, 0)
+        self.body.position = (self.position.x, self.position.y)
+        self.hitbox = pymunk.Poly.create_box (self.body, (self.width, self.height))
+        space.add (self.body, self.hitbox)
+    
+
+    def update2(self, dt):
+        x = self.hitbox.bb.left
+        y = self.hitbox.bb.top
+        self.rect.update (x, y, self.width, self.height)
+
+
     def touchingGround (self):
 
         global HEIGHT
@@ -43,6 +58,7 @@ class Player:
             return True
         
         return False
+
 
     def update (self, dt, platforms):
 

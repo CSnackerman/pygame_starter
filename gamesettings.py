@@ -1,5 +1,6 @@
 from pygame import Color
 
+
 # config
 
 WINDOW_FLAGS = 0
@@ -22,7 +23,7 @@ window_side_diff = WIDTH - HEIGHT
 
 # game settings
 MAX_SPEED = 1100
-GRAVITY = 3000
+GRAVITY = 1000
 JUMP_POWER = 1100
 ACCELERATION = 10000
 DECELERATION = 7000

@@ -1,12 +1,14 @@
 from sys import exit
 
+import pymunk
+
 import pygame
 from pygame.locals import *
 from pygame import Rect, Vector2, Color
 
 from platform import Platform
 
-from gamesettings import RESOLUTION, WINDOW_FLAGS, CURSOR_VISIBLE
+from gamesettings import GRAVITY, RESOLUTION, WINDOW_FLAGS, CURSOR_VISIBLE
 from gamesettings import WIDTH, HEIGHT, BG_COLOR
 
 from player import Player
@@ -16,6 +18,10 @@ from player import Player
 
 # pygame
 pygame.init()
+
+# setup pymunk
+space = pymunk.Space()
+space.gravity = 0, GRAVITY
 
 # window
 window = pygame.display.set_mode (RESOLUTION, WINDOW_FLAGS)
@@ -37,10 +43,10 @@ pygame.mouse.set_visible(CURSOR_VISIBLE)
 # --- Game Objects ---
 
 # player
-player = Player()
+player = Player(space)
 
 # platforms
-p1 = Platform (100, HEIGHT - 100, 200, 10, Color (255, 0, 0, 255))
+p1 = Platform (100, HEIGHT - 100, 200, 10, Color (255, 0, 0, 255), space)
 
 # fps text
 bold, antialias = True, True
@@ -67,12 +73,12 @@ while (RUNNING):
     clock.tick()
     frame_time += dt
     frame_counter += 1
+    space.step(dt)
     
     # keyboard events
-
     pressed_keys = pygame.key.get_pressed()
 
-    player.move_horizontal(pressed_keys)
+    # player.move_horizontal (pressed_keys)
     
     # quit
     if pressed_keys [K_ESCAPE]:
@@ -95,7 +101,8 @@ while (RUNNING):
             
             # jump
             if key == K_SPACE:
-                player.jump (p1)
+                continue
+                # player.jump (p1)
 
 
 
@@ -117,7 +124,8 @@ while (RUNNING):
             fps_font_color
         )
     
-    player.update(dt, p1)
+    # player.update(dt, p1)
+    player.update2(dt)
 
     # clear
     window.fill (BG_COLOR)
@@ -127,7 +135,7 @@ while (RUNNING):
 
     player.draw (window)
 
-    window.blit ( fps_text_surface, (fps_text_position_x, 0) )
+    # window.blit ( fps_text_surface, (fps_text_position_x, 0) )
 
     # swap the framebuffer
     pygame.display.update()
